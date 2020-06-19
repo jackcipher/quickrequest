@@ -1,9 +1,9 @@
 package quickrequest
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/jackcipher/quickrequest/util"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -46,55 +46,27 @@ func NewGet(url string, params map[string]string, headers map[string]string) []b
 /**
 Form Post
  */
-func NewPost(url string, params map[string]string, headers map[string]string) ([]byte, int){
-	var req *http.Request
-	var resp *http.Response
+func PostParamsJson(url string, params map[string]string, headers map[string]string) ([]byte, int){
+	var requestByte []byte
 	var err error
-	var body []byte
-	var requestJson []byte
-	if requestJson,err = json.Marshal(params);err!=nil {
+	if requestByte,err = json.Marshal(params);err!=nil {
 		log.Fatalln(err)
 	}
-	if req,err = http.NewRequest("POST", url, bytes.NewBuffer(requestJson)); err!=nil {
-		log.Fatalln(err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	for k,v := range headers {
-		req.Header.Add(k,v)
-	}
-	client := http.Client{}
-	if resp,err = client.Do(req); err!=nil {
-		log.Fatalln(err)
-	}
-	defer resp.Body.Close()
-	if body,err=ioutil.ReadAll(resp.Body);err!=nil {
-		log.Fatalln(err)
-	}
-	return body, resp.StatusCode
+	return util.RawPost(url, requestByte, headers, "application/json")
 }
 
 /**
 Post Json
  */
-func NewPostJson(url string, requestJson []byte, headers map[string]string) []byte {
-	var req *http.Request
-	var resp *http.Response
+func PostJson(url string, requestJson []byte, headers map[string]string) ([]byte,int) {
+	return util.RawPost(url, requestJson, headers, "application/json")
+}
+
+func PostForm(url string, params map[string]string, headers map[string]string) ([]byte,int)  {
+	var requestByte []byte
 	var err error
-	var body []byte
-	if req,err = http.NewRequest("POST", url, bytes.NewBuffer(requestJson)); err!=nil {
+	if requestByte,err = json.Marshal(params);err!=nil {
 		log.Fatalln(err)
 	}
-	req.Header.Set("Content-Type", "application/json")
-	for k,v := range headers {
-		req.Header.Add(k,v)
-	}
-	client := http.Client{}
-	if resp,err = client.Do(req); err!=nil {
-		log.Fatalln(err)
-	}
-	defer resp.Body.Close()
-	if body,err=ioutil.ReadAll(resp.Body);err!=nil {
-		log.Fatalln(err)
-	}
-	return body
+	return util.RawPost(url, requestByte, headers, "x-www-form-urlencode")
 }
