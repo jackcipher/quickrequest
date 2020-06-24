@@ -63,10 +63,5 @@ func PostJson(url string, requestJson []byte, headers map[string]string) ([]byte
 }
 
 func PostForm(url string, params map[string]string, headers map[string]string) ([]byte,int)  {
-	var requestByte []byte
-	var err error
-	if requestByte,err = json.Marshal(params);err!=nil {
-		log.Fatalln(err)
-	}
-	return util.RawPost(url, requestByte, headers, "x-www-form-urlencode")
+	return util.PostForm(url, params, headers)
 }
